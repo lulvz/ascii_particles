@@ -1,7 +1,8 @@
 const Particle = @import("particle.zig").Particle;
 pub const FireEmitter = struct {
     const Self = @This();
-    pub fn update(_: *Self, ps: anytype) void {
+    pub fn update(_: *Self, ps: anytype, dt: f64) void {
+        _ = dt;
         const p = Particle{
             .pos = .{10.0, 10.0},
             .vel = .{1.0, 0.0},

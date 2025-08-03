@@ -57,7 +57,7 @@ pub fn main() !void {
         const dt = @as(f64, @floatFromInt(timer.lap())) / std.time.ns_per_s;
 
         // logic
-        em.update(&ps);
+        em.update(&ps, dt);
         ps.update_particles(dt);
         updateFrameBuffer(&ps);
 
