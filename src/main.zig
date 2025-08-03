@@ -9,6 +9,8 @@ const MAX_PARTICLES = 200;
 const WIDTH = 70;
 const HEIGHT = 35;
 const BUFFER_SIZE = WIDTH * HEIGHT;
+const TARGET_FPS = 24;
+const TARGET_DT_NS: comptime_int = @intFromFloat((1.0 / @as(comptime_float, TARGET_FPS)) * @as(comptime_float, @floatFromInt(std.time.ns_per_s)));
 
 // const luminance_ramp: []const u8 = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
 const luminance_ramp: []const u8 = "@OC*+~:,. ";
@@ -62,11 +64,15 @@ pub fn main() !void {
 
     const running = true;
     var timer = try std.time.Timer.start();
-
     _ = try stdout.write("\x1b[2J"); // clear the screen
     try bw.flush();
     while(running) {
-        const dt = @as(f64, @floatFromInt(timer.lap())) / std.time.ns_per_s;
+        const elapsed_ns = timer.lap();
+        const dt = @as(f64, @floatFromInt(elapsed_ns)) / std.time.ns_per_s;
+
+        if (elapsed_ns < TARGET_DT_NS) {
+            std.time.sleep(TARGET_DT_NS - elapsed_ns);
+        }
 
         // logic
         em.update(&ps, dt);
@@ -86,6 +92,5 @@ pub fn main() !void {
         try stdout.print("{s}\n", .{"-"**(WIDTH+2)});
         try stdout.print("{d}", .{dt});
         try bw.flush();
-        std.time.sleep(100000000); // todo change target an fps
     }
 }

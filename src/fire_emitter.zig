@@ -27,8 +27,8 @@ pub const FireEmitter = struct {
             const p = Particle{
                 .pos = self.origin + @Vector(2, f64){((self.random.float(f64)-0.5)*2)*self.origin_radius,
                                                         ((self.random.float(f64)-0.5)*2)*self.origin_radius},
-                .vel = .{0.0, 0.0},
-                .acc = .{0.0 + ((self.random.float(f64) - 0.5) * 2.0), 0.0 + self.random.float(f64)},
+                .vel = .{0.0, 3.0 + (self.random.float(f64) - 0.5) * 2.0},
+                .acc = .{0.0 + ((self.random.float(f64) - 0.5) * 2.0), -0.4},
                 .lifetime = 6,
                 .brightness = 1.0,
                 .fade_rate = 1.0/6.0
