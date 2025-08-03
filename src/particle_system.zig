@@ -40,7 +40,7 @@ pub fn ParticleSystem(max_particles: comptime_int) type {
         }
 
         pub fn append_particle(self: *Self, p: Particle) !void {
-            if (self.particle_count > max_particles)
+            if (self.particle_count >= max_particles)
                 return AppendError.ParticleSystemFull;
 
             self.particles[self.particle_count] = p;

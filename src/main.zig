@@ -42,7 +42,19 @@ pub fn main() !void {
     // };
     // try ps.append_particle(p);
 
-    var em: Emitter = .{ .FireEmitter = .{} };
+    var prng = std.Random.DefaultPrng.init(blk: {
+        var seed: u64 = undefined;
+        try std.posix.getrandom(std.mem.asBytes(&seed));
+        break :blk seed;
+    });
+    const rand = prng.random();
+
+    var em: Emitter = .{ .FireEmitter = FireEmitter.init(
+        .{@floor(@as(f64, @floatFromInt(WIDTH))/2), 0.0},
+        1.0,
+        20.0,
+        rand
+    )};
 
     const stdout_file = std.io.getStdOut().writer();
     var bw = std.io.bufferedWriter(stdout_file);
@@ -64,14 +76,16 @@ pub fn main() !void {
         // render
         _ = try stdout.write("\x1b[H"); // return the cursor to home
         try stdout.print("{s}\n", .{"-"**(WIDTH+2)});
-        for(0..HEIGHT) |row| {
+        var row: isize = HEIGHT - 1;
+        while(row >= 0) : (row -= 1) {
+            const row_idx = @as(usize, @intCast(row));
             _ = try stdout.write("|");
-            _ = try stdout.write(frame_buffer[row*WIDTH..row*WIDTH+WIDTH]);
+            _ = try stdout.write(frame_buffer[row_idx*WIDTH..row_idx*WIDTH+WIDTH]);
             _ = try stdout.write("|\n"); // return the cursor to home
         }
         try stdout.print("{s}\n", .{"-"**(WIDTH+2)});
         try stdout.print("{d}", .{dt});
         try bw.flush();
-        std.time.sleep(200000000);
+        std.time.sleep(100000000); // todo change target an fps
     }
 }
