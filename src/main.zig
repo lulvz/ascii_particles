@@ -2,6 +2,8 @@ const std = @import("std");
 
 const Particle = @import("particle.zig").Particle;
 const ParticleSystem = @import("particle_system.zig").ParticleSystem;
+const Emitter = @import("emitter.zig").Emitter;
+const FireEmitter = @import("fire_emitter.zig").FireEmitter;
 
 const MAX_PARTICLES = 200;
 const WIDTH = 70;
@@ -9,16 +11,8 @@ const HEIGHT = 35;
 const BUFFER_SIZE = WIDTH * HEIGHT;
 
 // const luminance_ramp: []const u8 = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
-const luminance_ramp: []const u8 = "@OC*+~:'. ";
+const luminance_ramp: []const u8 = "@OC*+~:,. ";
 var frame_buffer: [BUFFER_SIZE]u8 = .{'A'}**BUFFER_SIZE;
-
-pub fn step() void {
-    for(0..WIDTH*HEIGHT) |i| {
-        frame_buffer[i] += 1;
-        if(frame_buffer[i] > 'Z')
-            frame_buffer[i] = 65;
-    }
-}
 
 pub fn updateFrameBuffer(ps: *ParticleSystem(MAX_PARTICLES)) void {
     @memset(&frame_buffer, ' ');
@@ -38,15 +32,17 @@ pub fn main() !void {
     const PS = ParticleSystem(MAX_PARTICLES);
     var ps = PS.init();
 
-    const p = Particle{
-        .pos = .{10.0, 10.0},
-        .vel = .{1.0, 0.0},
-        .acc = .{0.0, 0.0},
-        .lifetime = 10,
-        .brightness = 1.0,
-        .fade_rate = 0.1
-    };
-    try ps.append_particle(p);
+    // const p = Particle{
+    //     .pos = .{10.0, 10.0},
+    //     .vel = .{1.0, 0.0},
+    //     .acc = .{0.0, 0.0},
+    //     .lifetime = 10,
+    //     .brightness = 1.0,
+    //     .fade_rate = 0.1
+    // };
+    // try ps.append_particle(p);
+
+    var em: Emitter = .{ .FireEmitter = .{} };
 
     const stdout_file = std.io.getStdOut().writer();
     var bw = std.io.bufferedWriter(stdout_file);
@@ -61,6 +57,7 @@ pub fn main() !void {
         const dt = @as(f64, @floatFromInt(timer.lap())) / std.time.ns_per_s;
 
         // logic
+        em.update(&ps);
         ps.update_particles(dt);
         updateFrameBuffer(&ps);
 
