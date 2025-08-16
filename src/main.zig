@@ -2,14 +2,20 @@ const std = @import("std");
 
 const Particle = @import("particle.zig").Particle;
 const ParticleSystem = @import("particle_system.zig").ParticleSystem;
-const Emitter = @import("emitter.zig").Emitter;
-const FireEmitter = @import("fire_emitter.zig").FireEmitter;
+const emitter = @import("emitter.zig");
+const Emitter = emitter.Emitter;
+const FireEmitter = emitter.FireEmitter;
+
+const global_force = @import("global_force.zig");
+const GlobalForce = global_force.GlobalForce;
+const Gravity = global_force.Gravity;
+const Buoyancy = global_force.Buoyancy;
 
 const MAX_PARTICLES = 200;
 const WIDTH = 70;
 const HEIGHT = 35;
 const BUFFER_SIZE = WIDTH * HEIGHT;
-const TARGET_FPS = 24;
+const TARGET_FPS = 144;
 const TARGET_DT_NS: comptime_int = @intFromFloat((1.0 / @as(comptime_float, TARGET_FPS)) * @as(comptime_float, @floatFromInt(std.time.ns_per_s)));
 
 // const luminance_ramp: []const u8 = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
@@ -55,8 +61,12 @@ pub fn main() !void {
         .{@floor(@as(f64, @floatFromInt(WIDTH))/2), 0.0},
         1.0,
         20.0,
-        rand
+        rand,
+        null
     )};
+
+    var gfg: GlobalForce = .{ .Gravity = Gravity.init(.{}) };
+    var gfb: GlobalForce = .{ .Buoyancy = Buoyancy.init(.{}) };
 
     const stdout_file = std.io.getStdOut().writer();
     var bw = std.io.bufferedWriter(stdout_file);
@@ -70,12 +80,15 @@ pub fn main() !void {
         const elapsed_ns = timer.lap();
         const dt = @as(f64, @floatFromInt(elapsed_ns)) / std.time.ns_per_s;
 
-        if (elapsed_ns < TARGET_DT_NS) {
-            std.time.sleep(TARGET_DT_NS - elapsed_ns);
-        }
-
         // logic
+
+        // emitters
         em.update(&ps, dt);
+
+        // global forces
+        gfg.update(&ps, dt);
+        gfb.update(&ps, dt);
+
         ps.update_particles(dt);
         updateFrameBuffer(&ps);
 
@@ -90,7 +103,11 @@ pub fn main() !void {
             _ = try stdout.write("|\n"); // return the cursor to home
         }
         try stdout.print("{s}\n", .{"-"**(WIDTH+2)});
-        try stdout.print("{d}", .{dt});
+        try stdout.print("dt: {d}", .{dt});
         try bw.flush();
+
+        if (elapsed_ns < TARGET_DT_NS) {
+            std.time.sleep(TARGET_DT_NS - elapsed_ns);
+        }
     }
 }
