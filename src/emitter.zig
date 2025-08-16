@@ -10,6 +10,10 @@ pub const EmitterConfig = struct {
     max_vel: @Vector(2, f64),
     min_acc: @Vector(2, f64),
     max_acc: @Vector(2, f64),
+    min_mass: f64,
+    max_mass: f64,
+    min_volume: f64,
+    max_volume: f64,
 };
 
 pub const Emitter = union(enum) {
@@ -29,8 +33,12 @@ pub const defaultFireEmitterConfig = EmitterConfig {
     .max_brightness = 1.0,
     .min_vel = .{0.0, 2.0},
     .max_vel = .{0.0, 4.0},
-    .min_acc = .{-1.0, -0.4},
-    .max_acc = .{1.0, -0.7}
+    .min_acc = .{-1.0, 0.0},
+    .max_acc = .{1.0, 1.0},
+    .min_mass = 0.01,
+    .max_mass = 0.1,
+    .min_volume = 0.005,
+    .max_volume = 0.05,
 };
 
 pub const FireEmitter = struct {
@@ -68,6 +76,9 @@ pub const FireEmitter = struct {
                                                         ((self.random.float(f64)-0.5)*2)*self.origin_radius},
                 .vel = self.config.min_vel + @Vector(2, f64){self.random.float(f64), self.random.float(f64)} * (self.config.max_vel - self.config.min_vel),
                 .acc = self.config.min_acc + @Vector(2, f64){self.random.float(f64), self.random.float(f64)} * (self.config.max_acc - self.config.min_acc),
+
+                .mass = self.config.min_mass + self.random.float(f64) * (self.config.max_mass - self.config.min_mass),
+                .volume = self.config.min_volume + self.random.float(f64) * (self.config.max_volume - self.config.min_volume),
 
                 .lifetime = lifetime,
                 .brightness = brightness,

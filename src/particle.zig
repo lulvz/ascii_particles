@@ -3,7 +3,8 @@ pub const Particle = struct {
     vel: @Vector(2, f64),
     acc: @Vector(2, f64),
 
-    mass: f64, // TODO MAKE REST OF PROGRAM USE MASS
+    mass: f64,
+    volume: f64,
 
     lifetime: f64, // lifetime in seconds
 

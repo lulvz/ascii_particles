@@ -2,8 +2,14 @@ const std = @import("std");
 
 const Particle = @import("particle.zig").Particle;
 const ParticleSystem = @import("particle_system.zig").ParticleSystem;
-const Emitter = @import("emitter.zig").Emitter;
-const FireEmitter = @import("emitter.zig").FireEmitter;
+const emitter = @import("emitter.zig");
+const Emitter = emitter.Emitter;
+const FireEmitter = emitter.FireEmitter;
+
+const global_force = @import("global_force.zig");
+const GlobalForce = global_force.GlobalForce;
+const Gravity = global_force.Gravity;
+const Buoyancy = global_force.Buoyancy;
 
 const MAX_PARTICLES = 200;
 const WIDTH = 70;
@@ -59,6 +65,9 @@ pub fn main() !void {
         null
     )};
 
+    var gfg: GlobalForce = .{ .Gravity = Gravity.init(.{}) };
+    var gfb: GlobalForce = .{ .Buoyancy = Buoyancy.init(.{}) };
+
     const stdout_file = std.io.getStdOut().writer();
     var bw = std.io.bufferedWriter(stdout_file);
     const stdout = bw.writer();
@@ -72,7 +81,14 @@ pub fn main() !void {
         const dt = @as(f64, @floatFromInt(elapsed_ns)) / std.time.ns_per_s;
 
         // logic
+
+        // emitters
         em.update(&ps, dt);
+
+        // global forces
+        gfg.update(&ps, dt);
+        gfb.update(&ps, dt);
+
         ps.update_particles(dt);
         updateFrameBuffer(&ps);
 
