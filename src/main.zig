@@ -57,16 +57,23 @@ pub fn main() !void {
     });
     const rand = prng.random();
 
-    var em: Emitter = .{ .FireEmitter = FireEmitter.init(
-        .{@floor(@as(f64, @floatFromInt(WIDTH))/2), 0.0},
-        1.0,
-        20.0,
-        rand,
-        null
-    )};
+    var emitters = [_]Emitter{
+        .{ .FireEmitter = FireEmitter.init(
+            .{@floor(@as(f64, @floatFromInt(WIDTH))/2), 0.0},
+            1.0,
+            20.0,
+            rand,
+            null
+        )}
+    };
 
-    var gfg: GlobalForce = .{ .Gravity = Gravity.init(.{}) };
-    var gfb: GlobalForce = .{ .Buoyancy = Buoyancy.init(.{}) };
+    // var gfg: GlobalForce = .{ .Gravity = Gravity.init(.{}) };
+    // var gfb: GlobalForce = .{ .Buoyancy = Buoyancy.init(.{}) };
+
+    var global_forces = [_]GlobalForce{
+        .{ .Gravity = Gravity.init(.{}) },
+        .{ .Buoyancy = Buoyancy.init(.{}) },
+    };
 
     const stdout_file = std.io.getStdOut().writer();
     var bw = std.io.bufferedWriter(stdout_file);
@@ -83,11 +90,14 @@ pub fn main() !void {
         // logic
 
         // emitters
-        em.update(&ps, dt);
+        for(&emitters) |*em| {
+            em.update(&ps, dt);
+        }
 
         // global forces
-        gfg.update(&ps, dt);
-        gfb.update(&ps, dt);
+        for(&global_forces) |*gf| {
+            gf.update(&ps, dt);
+        }
 
         ps.update_particles(dt);
         updateFrameBuffer(&ps);
